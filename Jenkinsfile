@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage("Clone repository") {
             steps {
-                git branch: 'main', url: "${params['github-url']}", credentialsId: "github-dylan"
+                git branch: 'main', url: "${params['github-url']}", credentialsId: "github_daniela"
             }
         }
         stage("Build Dockerfile") {
@@ -22,7 +22,7 @@ pipeline {
         stage("Connect to DockerHub") {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: "DOCKERHUB-DYLAN", 
+                    withCredentials([usernamePassword(credentialsId: "dockerHub_daniela", 
                     usernameVariable: "dockerusername", passwordVariable: "dockerhubpassword")]) {
                         sh "docker login -u $dockerusername -p $dockerhubpassword"
                     }
