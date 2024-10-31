@@ -4,6 +4,7 @@ pipeline {
         string(name: 'github-url', defaultValue: '', description: 'Enter your GitHub URL')
         string(name: 'image-name', defaultValue: 'dockerhubusername/repo-name', description: 'Enter your image name')
         string(name: 'image-tag', defaultValue: 'latest', description: 'Enter your image tag')  
+        boolean(name: 'skip-stage', defaultValue: 'false', description: "mark for yes leave empty for false")  
     }
     environment {
         scanner = tool 'sonar'
@@ -15,7 +16,8 @@ pipeline {
                 git branch: 'main', url: "${params['github-url']}", credentialsId: "github_daniela"
             }
         }
-        stage("code scan") {
+        stage("Code scan") {
+            withCredentials([usernamePassword(credentialsId: "sonar", variables: 'SONAR_TOKEN')])
             steps {
                 script {
                     withsonarqubeEnv('sonar') {
@@ -32,6 +34,9 @@ pipeline {
             }
         }
         stage("Build Dockerfile") {
+            when {
+                expression {params.skip-stage}
+            }
             steps {
                 script {
                     sh "docker build -t ${params['image-name']}:${params['image-tag']} ."
@@ -39,6 +44,9 @@ pipeline {
             }
         }
         stage("Connect to DockerHub") {
+            when {
+                expression {params.skip-stage}
+            }
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: "dockerHub_daniela", 
@@ -49,6 +57,9 @@ pipeline {
             }
         }
         stage("Push to DockerHub") {
+            when {
+                expression {params.skip-stage}
+            }
             steps {
                 script {
                     sh "docker push ${params['image-name']}:${params['image-tag']}"
