@@ -5,11 +5,30 @@ pipeline {
         string(name: 'image-name', defaultValue: 'dockerhubusername/repo-name', description: 'Enter your image name')
         string(name: 'image-tag', defaultValue: 'latest', description: 'Enter your image tag')  
     }
+    environment {
+        scanner = tool 'sonar'
+    }
 
     stages {
         stage("Clone repository") {
             steps {
                 git branch: 'main', url: "${params['github-url']}", credentialsId: "github_daniela"
+            }
+        }
+        stage("code scan") {
+            steps {
+                script {
+                    withsonarqubeEnv('sonar') {
+                        sh '''
+                        $scanner/bin/sonnar-scanner \
+                        -Dsonnar.login=sonar \
+                        -Dsonnar.host.url=http://18.216.0.51:9000/ \
+                        -Dsonnar.projectKet=inance_daniela \
+                        -Dsonnar.source=./inance_daniela
+                        '''
+                        
+                    }
+                }
             }
         }
         stage("Build Dockerfile") {
