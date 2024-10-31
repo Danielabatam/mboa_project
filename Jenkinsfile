@@ -1,5 +1,6 @@
 pipeline {
     agent any
+    
     parameters {
         string(name: 'github-url', defaultValue: '', description: 'Enter your GitHub URL')
         string(name: 'image-name', defaultValue: 'dockerhubusername/repo-name', description: 'Enter your image name')
@@ -17,6 +18,10 @@ pipeline {
             }
         }
         stage("Code scan") {
+            when {
+                expression { !params.skip }
+            }
+         {
             steps {
                 withCredentials([usernamePassword(credentialsId: "sonar", usernameVariable: 'SONAR_TOKEN')]) {
                     script {
@@ -35,7 +40,7 @@ pipeline {
         }
         stage("Build Dockerfile") {
             when {
-                expression { params.skip-stage }
+                expression { !params.skip }
             }
             steps {
                 script {
@@ -45,7 +50,7 @@ pipeline {
         }
         stage("Connect to DockerHub") {
             when {
-                expression { params.skip-stage }
+                expression { !params.skip }
             }
             steps {
                 script {
