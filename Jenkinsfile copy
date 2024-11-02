@@ -7,25 +7,21 @@ pipeline {
         string(name: 'image-tag', defaultValue: 'latest', description: 'Enter your image tag')  
         boolean(name: 'skip-stage', defaultValue: 'false', description: "Mark for yes, leave empty for false")  
     }
-    
     environment {
         scanner = tool 'sonar'
     }
 
     stages {
         stage("Clone repository") {
-            when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
-            }
             steps {
                 git branch: 'main', url: "${params['github-url']}", credentialsId: "github_daniela"
             }
         }
-        
         stage("Code scan") {
             when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
+                expression { params.skip-stage }
             }
+         {
             steps {
                 withCredentials([usernamePassword(credentialsId: "sonar", usernameVariable: 'SONAR_TOKEN')]) {
                     script {
@@ -42,10 +38,9 @@ pipeline {
                 }
             }
         }
-        
         stage("Build Dockerfile") {
             when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
+                expression { params.skip-stage }
             }
             steps {
                 script {
@@ -53,10 +48,9 @@ pipeline {
                 }
             }
         }
-        
         stage("Connect to DockerHub") {
             when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
+                expression { params.skip-stage }
             }
             steps {
                 script {
@@ -67,10 +61,9 @@ pipeline {
                 }
             }
         }
-        
         stage("Push to DockerHub") {
             when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
+                expression { params.skip-stage }
             }
             steps {
                 script {
@@ -82,7 +75,7 @@ pipeline {
 
     post {
         always {
-            cleanWs() // Nettoie l'espace de travail après l'exécution du pipeline
+            cleanWs()
         }
     }
 }
