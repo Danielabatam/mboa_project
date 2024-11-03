@@ -14,9 +14,9 @@ pipeline {
 
     stages {
         stage("Clone repository") {
-            when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
-            }
+            // when {
+            //     expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
+            // }
             steps {
                 git branch: 'main', url: "${params['github-url']}", credentialsId: "github_daniela"
             }
