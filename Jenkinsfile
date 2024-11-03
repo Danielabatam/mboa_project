@@ -5,7 +5,7 @@ pipeline {
         string(name: 'github-url', defaultValue: '', description: 'Enter your GitHub URL')
         string(name: 'image-name', defaultValue: 'dockerhubusername/repo-name', description: 'Enter your image name')
         string(name: 'image-tag', defaultValue: 'latest', description: 'Enter your image tag')  
-        boolean(name: 'skip-stage', defaultValue: 'false', description: "Mark for yes, leave empty for false")  
+        boolean(name: 'skip-stage', defaultValue: false, description: "Mark for yes, leave empty for false")  
     }
     
     environment {
