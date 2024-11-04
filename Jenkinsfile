@@ -9,14 +9,14 @@ pipeline {
     }
     
     environment {
-        scanner = tool 'sonar'
+        sonar = tool 'sonar'
     }
 
     stages {
         stage("Clone repository") {
-            // when {
-            //     expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
-            // }
+            when {
+                expression { !params.skip-stage }
+            }
             steps {
                 git branch: 'main', url: "${params['github-url']}", credentialsId: "github_daniela"
             }
@@ -24,19 +24,19 @@ pipeline {
         
         stage("Code scan") {
             when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
+                expression { !params.skip-stage }
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: "sonar", usernameVariable: 'SONAR_TOKEN')]) {
                     script {
                         withSonarQubeEnv('sonar') {
-                            sh '''
+                            sh """
                                 $scanner/bin/sonar-scanner \
                                 -Dsonar.login=$SONAR_TOKEN \
                                 -Dsonar.host.url=http://3.17.190.122:9000/ \
                                 -Dsonar.projectKey=inance_daniela \
                                 -Dsonar.sources=./inance_daniela
-                            '''
+                            """
                         }
                     }
                 }
@@ -45,7 +45,7 @@ pipeline {
         
         stage("Build Dockerfile") {
             when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
+                expression { !params.skip-stage }
             }
             steps {
                 script {
@@ -56,21 +56,19 @@ pipeline {
         
         stage("Connect to DockerHub") {
             when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
+                expression { params.skip-stage }
             }
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: "dockerHub_daniela", 
-                    usernameVariable: "dockerusername", passwordVariable: "dockerhubpassword")]) {
-                        sh "docker login -u $dockerusername -p $dockerhubpassword"
-                    }
+                withCredentials([usernamePassword(credentialsId: "dockerHub_daniela", 
+                usernameVariable: "dockerusername", passwordVariable: "dockerhubpassword")]) {
+                    sh "docker login -u $dockerusername -p $dockerhubpassword"
                 }
             }
         }
         
         stage("Push to DockerHub") {
             when {
-                expression { !params.skip-stage } // Exécute cette étape si skip-stage est faux
+                expression { !params.skip-stage }
             }
             steps {
                 script {
@@ -82,7 +80,7 @@ pipeline {
 
     post {
         always {
-            cleanWs() // Nettoie l'espace de travail après l'exécution du pipeline
+            cleanWs()
         }
     }
 }
